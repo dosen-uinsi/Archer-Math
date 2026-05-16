@@ -41,11 +41,9 @@
 
     #game-title img {
       display: block;
-      /* UKURAN GAMBAR LOGO DIPERBESAR (Sebelumnya 220px) */
       width: 300px; 
       height: auto;
     }
-    /* -------------------------------------------------------- */
 
     svg {
       width: 100%;
@@ -59,6 +57,7 @@
       z-index: 1;
     }
 
+    /* --- STYLING PANEL UI TERBARU --- */
     #ui {
       position: absolute;
       top: 20px;
@@ -69,14 +68,44 @@
 
     .panel {
       background: rgba(0, 0, 0, 0.4);
-      padding: 15px 25px;
+      padding: 15px 20px;
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(8px);
       color: #fff;
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
       width: 290px;
+      transition: all 0.3s ease;
     }
+
+    /* Header Toggle Pengaturan */
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-weight: bold;
+      color: #88ce02;
+      font-size: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 10px;
+      user-select: none;
+    }
+    .panel-header:hover { color: #ffcc00; }
+    
+    .chevron {
+      transition: transform 0.3s ease;
+      font-size: 12px;
+    }
+    .chevron.collapsed { transform: rotate(-90deg); }
+
+    /* Konten Pengaturan yang bisa disembunyikan */
+    #settings-content {
+      display: block; 
+      overflow: hidden;
+    }
+    #settings-content.hidden { display: none; }
 
     .stat {
       font-size: 15px;
@@ -205,55 +234,61 @@
 
   <div id="ui">
     <div class="panel">
-      <div class="stat">
-        <label>Soal:</label>
-        <select id="math-level">
-          <option value="tanpa-soal">Mati (Normal)</option>
-          <option value="acak">Acak (2-9)</option>
-          <option value="2">Perkalian 2</option>
-          <option value="3">Perkalian 3</option>
-          <option value="4">Perkalian 4</option>
-          <option value="5">Perkalian 5</option>
-          <option value="6">Perkalian 6</option>
-          <option value="7">Perkalian 7</option>
-          <option value="8">Perkalian 8</option>
-          <option value="9">Perkalian 9</option>
-        </select>
+      <div class="panel-header" onclick="toggleSettings()">
+        <span>⚙️ Pengaturan</span>
+        <span class="chevron" id="settings-chevron">▼</span>
       </div>
-      <div class="stat">
-        <label>Waktu:</label>
-        <select id="timer-mode">
-          <option value="off">Mati (Santai)</option>
-          <option value="15">15 Detik</option>
-          <option value="10">10 Detik</option>
-          <option value="5">5 Detik</option>
-        </select>
+
+      <div id="settings-content">
+        <div class="stat">
+          <label>Soal:</label>
+          <select id="math-level">
+            <option value="tanpa-soal">Mati (Normal)</option>
+            <option value="acak">Acak (2-9)</option>
+            <option value="2">Perkalian 2</option>
+            <option value="3">Perkalian 3</option>
+            <option value="4">Perkalian 4</option>
+            <option value="5">Perkalian 5</option>
+            <option value="6">Perkalian 6</option>
+            <option value="7">Perkalian 7</option>
+            <option value="8">Perkalian 8</option>
+            <option value="9">Perkalian 9</option>
+          </select>
+        </div>
+        <div class="stat">
+          <label>Waktu:</label>
+          <select id="timer-mode">
+            <option value="off">Mati (Santai)</option>
+            <option value="15">15 Detik</option>
+            <option value="10">10 Detik</option>
+            <option value="5">5 Detik</option>
+          </select>
+        </div>
+        <div class="stat">
+          <label>Target:</label>
+          <select id="target-mode">
+            <option value="static">Diam</option>
+            <option value="slow">Lambat</option>
+            <option value="normal">Normal</option>
+            <option value="fast">Cepat</option>
+          </select>
+        </div>
+        <div class="stat">
+          <label>Angin:</label>
+          <select id="wind-mode">
+            <option value="on">Aktif</option>
+            <option value="off">Mati</option>
+          </select>
+        </div>
+        <div class="stat">
+          <label>Suara:</label>
+          <select id="sound-mode">
+            <option value="on">Aktif 🔊</option>
+            <option value="off">Bisu 🔇</option>
+          </select>
+        </div>
+        <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0 10px 0;">
       </div>
-      <div class="stat">
-        <label>Target:</label>
-        <select id="target-mode">
-          <option value="static">Diam</option>
-          <option value="slow">Lambat</option>
-          <option value="normal">Normal</option>
-          <option value="fast">Cepat</option>
-        </select>
-      </div>
-      <div class="stat">
-        <label>Angin:</label>
-        <select id="wind-mode">
-          <option value="on">Aktif</option>
-          <option value="off">Mati</option>
-        </select>
-      </div>
-      <div class="stat">
-        <label>Suara:</label>
-        <select id="sound-mode">
-          <option value="on">Aktif 🔊</option>
-          <option value="off">Bisu 🔇</option>
-        </select>
-      </div>
-      
-      <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
       
       <div class="stat" style="justify-content:flex-start; flex-direction:column; align-items:flex-start;">
         Skor Total <span id="score">0</span>
@@ -337,7 +372,7 @@
     <g class="bullseye" fill="#F4531C" opacity="0">
       <path d="M322,159l15-21l-27-13l-32,13l15,71l41-14l7-32L322,159z M292,142h20l3,8l-16,8 L292,142z M321,182l-18,9l-4-18l23-2V182z" />
       <path d="M340 131L359 125 362 169 381 167 386 123 405 129 392 183 351 186z" />
-      <path d="M413 119L402 188 450 196 454 175 422 175 422 175 438 120z" />
+      <path d="M413 119L402 188 450 196 454 175 422 175 438 120z" />
       <path d="M432 167L454 169 466 154 451 151 478 115 453 113z" />
       <path d="M524 109L492 112 466 148 487 155 491 172 464 167 463 184 502 191 513 143 487 141 496 125 517 126z" />
       <path d="M537 114L512 189 558 199 566 174 533 175 539 162 553 164 558 150 543 145 547 134 566 148 575 124z" />
@@ -353,7 +388,21 @@
   </svg>
 
   <script>
-    // --- SISTEM EFEK SUARA (Sintesis Langsung tanpa MP3) --- //
+    // --- FUNGSI TOGGLE PENGATURAN UI --- //
+    window.toggleSettings = function() {
+      const content = document.getElementById('settings-content');
+      const chevron = document.getElementById('settings-chevron');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        chevron.classList.remove('collapsed');
+      } else {
+        content.classList.add('hidden');
+        chevron.classList.add('collapsed');
+      }
+    };
+    // ----------------------------------- //
+
+    // --- SISTEM EFEK SUARA --- //
     const SoundEngine = {
       ctx: null,
       enabled: true,
