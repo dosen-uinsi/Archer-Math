@@ -2,14 +2,13 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=1000, user-scalable=no" />
   <title>Archer Math by Mathnology</title>
   <style>
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      /* Menggunakan warna solid dari gambar input pengguna (#2a2a2a) */
       background-color: #2a2a2a; 
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow: hidden;
@@ -29,7 +28,7 @@
     }
     .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
 
-    /* --- STYLING JUDUL GAME (Diganti dengan Gambar) --- */
+    /* --- STYLING JUDUL GAMBAR --- */
     #game-title {
       position: absolute;
       top: 25px;
@@ -38,20 +37,13 @@
       text-align: center;
       z-index: 5;
       pointer-events: none;
-      /* Hapus font-family karena sekarang menggunakan gambar */
     }
 
     #game-title img {
-      display: block; /* Agar di tengah kontainer */
-      max-width: 600px; /* Ukuran maksimal yang masuk akal */
+      display: block;
+      /* UKURAN GAMBAR LOGO DIPERBESAR (Sebelumnya 220px) */
+      width: 300px; 
       height: auto;
-      /* Tidak ada rotasi tambahan, biarkan gaya gambar asli */
-    }
-
-    /* Responsif untuk layar HP agar judul tidak menutupi UI */
-    @media (max-width: 800px) {
-      #game-title { top: 15px; }
-      #game-title img { max-width: 300px; } /* Ukuran lebih kecil untuk HP */
     }
     /* -------------------------------------------------------- */
 
@@ -345,7 +337,7 @@
     <g class="bullseye" fill="#F4531C" opacity="0">
       <path d="M322,159l15-21l-27-13l-32,13l15,71l41-14l7-32L322,159z M292,142h20l3,8l-16,8 L292,142z M321,182l-18,9l-4-18l23-2V182z" />
       <path d="M340 131L359 125 362 169 381 167 386 123 405 129 392 183 351 186z" />
-      <path d="M413 119L402 188 450 196 454 175 422 175 438 120z" />
+      <path d="M413 119L402 188 450 196 454 175 422 175 422 175 438 120z" />
       <path d="M432 167L454 169 466 154 451 151 478 115 453 113z" />
       <path d="M524 109L492 112 466 148 487 155 491 172 464 167 463 184 502 191 513 143 487 141 496 125 517 126z" />
       <path d="M537 114L512 189 558 199 566 174 533 175 539 162 553 164 558 150 543 145 547 134 566 148 575 124z" />
