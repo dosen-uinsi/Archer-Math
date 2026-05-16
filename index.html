@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Archer Math by Mathnology</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      /* Menggunakan warna solid dari gambar input pengguna (#2a2a2a) */
+      background-color: #2a2a2a; 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    @keyframes shake {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      20% { transform: translate(-3px, 0px) rotate(1deg); }
+      40% { transform: translate(1px, -1px) rotate(1deg); }
+      60% { transform: translate(-3px, 1px) rotate(0deg); }
+      80% { transform: translate(-1px, -1px) rotate(1deg); }
+      100% { transform: translate(0px, 0px) rotate(0deg); }
+    }
+    .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+
+    /* --- STYLING JUDUL GAME (Diganti dengan Gambar) --- */
+    #game-title {
+      position: absolute;
+      top: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 5;
+      pointer-events: none;
+      /* Hapus font-family karena sekarang menggunakan gambar */
+    }
+
+    #game-title img {
+      display: block; /* Agar di tengah kontainer */
+      max-width: 600px; /* Ukuran maksimal yang masuk akal */
+      height: auto;
+      /* Tidak ada rotasi tambahan, biarkan gaya gambar asli */
+    }
+
+    /* Responsif untuk layar HP agar judul tidak menutupi UI */
+    @media (max-width: 800px) {
+      #game-title { top: 15px; }
+      #game-title img { max-width: 300px; } /* Ukuran lebih kecil untuk HP */
+    }
+    /* -------------------------------------------------------- */
+
+    svg {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      cursor: crosshair;
+      user-select: none;
+      touch-action: none;
+      z-index: 1;
+    }
+
+    #ui {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      z-index: 10;
+      pointer-events: auto; 
+    }
+
+    .panel {
+      background: rgba(0, 0, 0, 0.4);
+      padding: 15px 25px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      width: 290px;
+    }
+
+    .stat {
+      font-size: 15px;
+      margin-bottom: 10px;
+      font-weight: 500;
+      color: #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .stat label { min-width: 70px; }
+    .stat:last-child { margin-bottom: 0; }
+    .stat span { font-weight: bold; }
+
+    select {
+      background: #2b3a42;
+      color: #fff;
+      border: 1px solid #88ce02;
+      border-radius: 6px;
+      padding: 5px 8px;
+      font-size: 14px;
+      outline: none;
+      cursor: pointer;
+      flex: 1;
+    }
+    select:focus { border-color: #ffcc00; }
+
+    #score { color: #ffcc00; font-size: 26px; display: block; margin-top: 5px; }
+    #wind-container { color: #88ce02; background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 6px; margin-top: 15px; width: 100%; justify-content: center;}
+    #wind-arrow { display: inline-block; font-weight: bold; margin-left: 5px; }
+
+    #tutorial {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.5);
+      font-size: 14px;
+      pointer-events: none;
+      z-index: 10;
+      letter-spacing: 1px;
+      background: rgba(0,0,0,0.5);
+      padding: 8px 16px;
+      border-radius: 20px;
+    }
+
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(15, 23, 30, 0.95);
+      padding: 40px 50px;
+      border-radius: 20px;
+      text-align: center;
+      color: white;
+      pointer-events: auto;
+      z-index: 50;
+      box-shadow: 0 0 50px rgba(0,0,0,0.8);
+      display: none;
+    }
+
+    .modal button {
+      background: #88ce02;
+      color: #111;
+      border: none;
+      padding: 12px 30px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.2s;
+    }
+    .modal button:hover { transform: scale(1.05); background: #99e600; }
+
+    #math-modal { border: 2px solid #88ce02; }
+    #math-modal h2 { margin: 0 0 5px 0; color: #88ce02; font-size: 24px; }
+    
+    #math-timer-display {
+      font-size: 20px;
+      color: #ff4444;
+      font-weight: bold;
+      margin-bottom: 10px;
+      display: none;
+      letter-spacing: 1px;
+    }
+    
+    #math-question { font-size: 32px; font-weight: bold; margin: 15px 0; letter-spacing: 2px; }
+    #math-answer {
+      font-size: 28px;
+      width: 120px;
+      text-align: center;
+      padding: 10px;
+      background: #2b3a42;
+      color: #fff;
+      border: 2px solid #555;
+      border-radius: 8px;
+      outline: none;
+    }
+    #math-answer:focus { border-color: #88ce02; }
+    #math-answer:disabled { opacity: 0.5; border-color: #ff4444; }
+    #math-error { color: #ff4444; font-size: 14px; margin-top: 15px; font-weight: bold; display: none; }
+
+    #game-over { border: 2px solid #ffcc00; }
+    #game-over h2 { margin: 0 0 10px 0; font-size: 36px; color: #ffcc00; }
+    #game-over p { font-size: 20px; color: #ddd; }
+
+    .miss path, .bullseye path, .hit path {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .message-show path {
+      animation: popIn 0.45s ease-out both, popOut 0.35s ease-in 2s forwards;
+    }
+
+    @keyframes popIn { from { transform: rotate(-5deg) scale(0); } to { transform: rotate(0deg) scale(1); } }
+    @keyframes popOut { to { transform: rotate(20deg) scale(0); } }
+  </style>
+</head>
+<body>
+
+  <div id="game-title">
+    <img src="https://raw.githubusercontent.com/dosen-uinsi/Archer-Math/refs/heads/main/ARCHER%20MATH.png" alt="Archer Math By Mathnology Logo">
+  </div>
+
+  <div id="ui">
+    <div class="panel">
+      <div class="stat">
+        <label>Soal:</label>
+        <select id="math-level">
+          <option value="tanpa-soal">Mati (Normal)</option>
+          <option value="acak">Acak (2-9)</option>
+          <option value="2">Perkalian 2</option>
+          <option value="3">Perkalian 3</option>
+          <option value="4">Perkalian 4</option>
+          <option value="5">Perkalian 5</option>
+          <option value="6">Perkalian 6</option>
+          <option value="7">Perkalian 7</option>
+          <option value="8">Perkalian 8</option>
+          <option value="9">Perkalian 9</option>
+        </select>
+      </div>
+      <div class="stat">
+        <label>Waktu:</label>
+        <select id="timer-mode">
+          <option value="off">Mati (Santai)</option>
+          <option value="15">15 Detik</option>
+          <option value="10">10 Detik</option>
+          <option value="5">5 Detik</option>
+        </select>
+      </div>
+      <div class="stat">
+        <label>Target:</label>
+        <select id="target-mode">
+          <option value="static">Diam</option>
+          <option value="slow">Lambat</option>
+          <option value="normal">Normal</option>
+          <option value="fast">Cepat</option>
+        </select>
+      </div>
+      <div class="stat">
+        <label>Angin:</label>
+        <select id="wind-mode">
+          <option value="on">Aktif</option>
+          <option value="off">Mati</option>
+        </select>
+      </div>
+      <div class="stat">
+        <label>Suara:</label>
+        <select id="sound-mode">
+          <option value="on">Aktif 🔊</option>
+          <option value="off">Bisu 🔇</option>
+        </select>
+      </div>
+      
+      <hr style="border-color: rgba(255,255,255,0.1); margin: 15px 0;">
+      
+      <div class="stat" style="justify-content:flex-start; flex-direction:column; align-items:flex-start;">
+        Skor Total <span id="score">0</span>
+      </div>
+      <div class="stat">Sisa Panah: <span id="arrows-left" style="color:white;">5</span></div>
+      <div class="stat" id="wind-container">Angin: <span id="wind-val">0.0</span> <span id="wind-arrow">-</span></div>
+    </div>
+  </div>
+
+  <div id="tutorial">Tarik layar ke kiri untuk membidik, perhatikan arah angin!</div>
+
+  <div id="math-modal" class="modal">
+    <h2>Isi Amunisi Panahmu!</h2>
+    <div id="math-timer-display">Waktu: 10s</div>
+    <p>Berapa hasil dari:</p>
+    <div id="math-question">5 x 6 = ?</div>
+    <input type="number" id="math-answer" placeholder="..." autocomplete="off" />
+    <br>
+    <button id="math-submit-btn" onclick="checkMathAnswer()">Siap Memanah</button>
+    <div id="math-error">Jawaban salah! Ayo coba hitung lagi.</div>
+  </div>
+
+  <div id="game-over" class="modal">
+    <h2>Permainan Selesai!</h2>
+    <p>Skor Akhir: <span id="final-score" style="color:#ffcc00; font-weight:bold;">0</span></p>
+    <button onclick="resetGame()">Main Lagi</button>
+  </div>
+
+  <svg id="game" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 400" overflow="visible">
+    <linearGradient id="ArcGradient">
+      <stop offset="0" stop-color="#fff" stop-opacity=".3" />
+      <stop offset="100%" stop-color="#fff" stop-opacity="0" />
+    </linearGradient>
+
+    <clipPath id="mask-target">
+      <polygon points="0,0 1500,0 1500,200 970,290 950,240 925,220 875,280 890,295 920,310 0,350" />
+    </clipPath>
+
+    <clipPath id="mask-flying">
+      <polygon points="0,0 1500,0 1500,1000 920,1000 920,310 0,350" />
+    </clipPath>
+
+    <path id="arc" fill="none" stroke="url(#ArcGradient)" stroke-width="3" stroke-dasharray="6, 6" d="M100,250c250-400,550-400,800,0" pointer-events="none" opacity="0" />
+
+    <defs>
+      <g id="arrow">
+        <line x2="60" fill="none" stroke="#ccc" stroke-width="2" />
+        <polygon fill="#ccc" points="64 0 58 2 56 0 58 -2" />
+        <polygon fill="#88ce02" points="2 -3 -4 -3 -1 0 -4 3 2 3 5 0" />
+      </g>
+    </defs>
+
+    <g id="bow" fill="none" stroke-linecap="round" vector-effect="non-scaling-stroke" pointer-events="none">
+      <polyline fill="none" stroke="#ddd" stroke-linecap="round" points="88,200 88,250 88,300" />
+      <path fill="none" stroke="#88ce02" stroke-width="3" stroke-linecap="round" d="M88,300 c0-10.1,12-25.1,12-50s-12-39.9-12-50" />
+    </g>
+
+    <g class="arrow-angle" pointer-events="none">
+      <use x="100" y="250" href="#arrow" opacity="0" />
+    </g>
+
+    <g id="moving-target-group">
+      <g id="target">
+        <path fill="#FFF" d="M924.2,274.2c-21.5,21.5-45.9,19.9-52,3.2c-4.4-12.1,2.4-29.2,14.2-41c11.8-11.8,29-18.6,41-14.2 C944.1,228.3,945.7,252.8,924.2,274.2z" />
+        <path fill="#F4531C" d="M915.8,265.8c-14.1,14.1-30.8,14.6-36,4.1c-4.1-8.3,0.5-21.3,9.7-30.5s22.2-13.8,30.5-9.7 C930.4,235,929.9,251.7,915.8,265.8z" />
+        <path fill="#FFF" d="M908.9,258.9c-8,8-17.9,9.2-21.6,3.5c-3.2-4.9-0.5-13.4,5.6-19.5c6.1-6.1,14.6-8.8,19.5-5.6 C918.1,241,916.9,250.9,908.9,258.9z" />
+        <path fill="#F4531C" d="M903.2,253.2c-2.9,2.9-6.7,3.6-8.3,1.7c-1.5-1.8-0.6-5.4,2-8c2.6-2.6,6.2-3.6,8-2 C906.8,246.5,906.1,250.2,903.2,253.2z" />
+      </g>
+      <g id="arrows-target" clip-path="url(#mask-target)" pointer-events="none"></g>
+    </g>
+
+    <g id="arrows-ground" clip-path="url(#mask-flying)" pointer-events="none"></g>
+
+    <g class="miss" fill="#aaa" opacity="0" transform="translate(0, 100)">
+      <path d="M358 194L363 118 386 120 400 153 416 121 440 119 446 203 419 212 416 163 401 180 380 160 381 204" />
+      <path d="M450 120L458 200 475 192 474 121" />
+      <path d="M537 118L487 118 485 160 515 162 509 177 482 171 482 193 529 199 538 148 501 146 508 133 537 137" />
+      <path d="M540 202L543 178 570 186 569 168 544 167 546 122 590 116 586 142 561 140 560 152 586 153 586 205" />
+    </g>
+
+    <g class="bullseye" fill="#F4531C" opacity="0">
+      <path d="M322,159l15-21l-27-13l-32,13l15,71l41-14l7-32L322,159z M292,142h20l3,8l-16,8 L292,142z M321,182l-18,9l-4-18l23-2V182z" />
+      <path d="M340 131L359 125 362 169 381 167 386 123 405 129 392 183 351 186z" />
+      <path d="M413 119L402 188 450 196 454 175 422 175 438 120z" />
+      <path d="M432 167L454 169 466 154 451 151 478 115 453 113z" />
+      <path d="M524 109L492 112 466 148 487 155 491 172 464 167 463 184 502 191 513 143 487 141 496 125 517 126z" />
+      <path d="M537 114L512 189 558 199 566 174 533 175 539 162 553 164 558 150 543 145 547 134 566 148 575 124z" />
+      <path d="M577 118L587 158 570 198 587 204 626 118 606 118 598 141 590 112z" />
+      <path d="M635 122L599 198 643 207 649 188 624 188 630 170 639 178 645 162 637 158 649 143 662 151 670 134z" />
+    </g>
+
+    <g class="hit" fill="#ffcc00" opacity="0" transform="translate(180, -80) rotate(12)">
+      <path d="M383 114L385 195 407 191 406 160 422 155 418 191 436 189 444 112 423 119 422 141 407 146 400 113" />
+      <path d="M449 185L453 113 477 112 464 186" />
+      <path d="M486 113L484 130 506 130 481 188 506 187 520 131 540 135 545 119" />
+    </g>
+  </svg>
+
+  <script>
+    // --- SISTEM EFEK SUARA (Sintesis Langsung tanpa MP3) --- //
+    const SoundEngine = {
+      ctx: null,
+      enabled: true,
+      drawNodes: [], 
+
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+        this.enabled = document.getElementById('sound-mode').value === 'on';
+      },
+
+      play(type) {
+        if (!this.enabled || !this.ctx) return;
+        const t = this.ctx.currentTime;
+
+        if (type === 'correct') {
+          this.beep(440, t, 0.1, 'square', 0.05); 
+          this.beep(554, t + 0.1, 0.1, 'square', 0.05); 
+          this.beep(659, t + 0.2, 0.2, 'square', 0.05); 
+        } 
+        else if (type === 'wrong') {
+          this.beep(200, t, 0.2, 'sawtooth', 0.1);
+          this.beep(150, t + 0.2, 0.3, 'sawtooth', 0.15);
+        }
+        else if (type === 'draw') {
+          this.stopDraw();
+          
+          const drawDuration = 0.45; 
+          
+          const osc = this.ctx.createOscillator();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(10, t); 
+          osc.frequency.linearRampToValueAtTime(35, t + drawDuration); 
+
+          const filter = this.ctx.createBiquadFilter();
+          filter.type = 'lowpass';
+          filter.frequency.setValueAtTime(400, t);
+          filter.frequency.linearRampToValueAtTime(800, t + drawDuration);
+
+          const gain = this.ctx.createGain();
+          gain.gain.setValueAtTime(0.5, t);
+          gain.gain.linearRampToValueAtTime(0.8, t + drawDuration - 0.1);
+          gain.gain.linearRampToValueAtTime(0.01, t + drawDuration);
+
+          osc.connect(filter);
+          filter.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(t);
+          osc.stop(t + drawDuration); 
+          this.drawNodes.push(osc);
+
+          const bufferSize = this.ctx.sampleRate * drawDuration; 
+          const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+          const noise = this.ctx.createBufferSource();
+          noise.buffer = buffer;
+
+          const noiseFilter = this.ctx.createBiquadFilter();
+          noiseFilter.type = 'bandpass';
+          noiseFilter.frequency.setValueAtTime(1500, t);
+          noiseFilter.frequency.linearRampToValueAtTime(3000, t + drawDuration);
+
+          const noiseGain = this.ctx.createGain();
+          noiseGain.gain.setValueAtTime(0.01, t);
+          noiseGain.gain.linearRampToValueAtTime(0.1, t + drawDuration - 0.1);
+          noiseGain.gain.linearRampToValueAtTime(0.01, t + drawDuration);
+
+          noise.connect(noiseFilter);
+          noiseFilter.connect(noiseGain);
+          noiseGain.connect(this.ctx.destination);
+          noise.start(t);
+          noise.stop(t + drawDuration); 
+          this.drawNodes.push(noise);
+        }
+        else if (type === 'shoot') {
+          this.stopDraw();
+          this.playNoise(t, 0.25, 800, 50); 
+        }
+        else if (type === 'hit') {
+          this.beep(120, t, 0.15, 'sine', 0.5); 
+        }
+        else if (type === 'bullseye') {
+          this.beep(120, t, 0.15, 'sine', 0.5); 
+          this.beep(880, t, 0.1, 'sine', 0.1); 
+          this.beep(1760, t + 0.1, 0.3, 'sine', 0.1); 
+        }
+        else if (type === 'miss') {
+          this.playNoise(t, 0.2, 300, 50); 
+        }
+      },
+
+      stopDraw() {
+        if (this.drawNodes && this.drawNodes.length > 0) {
+          this.drawNodes.forEach(node => {
+            try { node.stop(); } catch(e){}
+          });
+          this.drawNodes = [];
+        }
+      },
+
+      beep(freq, time, dur, type = 'sine', vol = 0.1) {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, time);
+        gain.gain.setValueAtTime(vol, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + dur);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(time);
+        osc.stop(time + dur);
+      },
+
+      playNoise(time, dur, freqStart, freqEnd) {
+        const bufferSize = this.ctx.sampleRate * dur;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = Math.random() * 2 - 1; 
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(freqStart, time);
+        filter.frequency.exponentialRampToValueAtTime(freqEnd, time + dur);
+        
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.3, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + dur);
+        
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(time);
+      }
+    };
+    // ------------------------------------------------------------- //
+
+    const svg = document.querySelector("svg");
+    const cursor = svg.createSVGPoint();
+    const arc = document.getElementById("arc");
+    const bow = document.getElementById("bow");
+    const bowString = document.querySelector("#bow polyline");
+    const arrowAngle = document.querySelector(".arrow-angle");
+    const aimingArrow = document.querySelector(".arrow-angle use");
+
+    let score = 0;
+    let arrowsCount = 5;
+    let isGameOver = false;
+    
+    // Wind Variables
+    let currentWind = 0;
+    
+    // Math Variables
+    let currentMathAnswer = 0;
+    let isMathSolved = false;
+    let mathTimerInterval = null;
+    let mathTimeLeft = 0;
+
+    // Target Movement Variables
+    let targetYOffset = 0;
+    let targetDirection = 1;
+    let targetSpeed = 0; 
+
+    // Bow Mechanics
+    let randomAngle = 0;
+    let currentBowAngle = 0;
+    let currentDistance = 0;
+    let isDrawing = false;
+    let flightAnimation = null;
+
+    const target = { x: 900, y: 249.5 };
+    const lineSegment = { x1: 875, y1: 280, x2: 925, y2: 220 };
+    const pivot = { x: 100, y: 250 };
+
+    window.addEventListener("mousedown", draw);
+    window.addEventListener("touchstart", draw, { passive: false });
+
+    document.getElementById('math-level').addEventListener('change', () => {
+      if (!isGameOver && !isDrawing) generateMathQuestion();
+    });
+
+    document.getElementById('timer-mode').addEventListener('change', () => {
+      if (!isGameOver && !isDrawing && document.getElementById('math-modal').style.display !== 'none') {
+        generateMathQuestion(); 
+      }
+    });
+    
+    document.getElementById('wind-mode').addEventListener('change', updateWind);
+    
+    document.getElementById('target-mode').addEventListener('change', () => {
+      const mode = document.getElementById('target-mode').value;
+      if (mode === 'static') targetSpeed = 0;
+      else if (mode === 'slow') targetSpeed = 0.5;
+      else if (mode === 'normal') targetSpeed = 1.2;
+      else if (mode === 'fast') targetSpeed = 2.5;
+
+      if (targetSpeed === 0) {
+        targetYOffset = 0;
+        applyTargetTransform();
+      }
+    });
+
+    document.getElementById('sound-mode').addEventListener('change', () => {
+      SoundEngine.enabled = document.getElementById('sound-mode').value === 'on';
+    });
+
+    // Inisialisasi awal
+    updateWind();
+    generateMathQuestion(); 
+    requestAnimationFrame(animateTargetMovement);
+
+    function animateTargetMovement() {
+      if (targetSpeed > 0 && !isGameOver) {
+        targetYOffset += targetSpeed * targetDirection;
+        if (targetYOffset > 50) {
+          targetYOffset = 50;
+          targetDirection = -1;
+        } else if (targetYOffset < -50) {
+          targetYOffset = -50;
+          targetDirection = 1;
+        }
+        applyTargetTransform();
+      }
+      requestAnimationFrame(animateTargetMovement); 
+    }
+
+    function applyTargetTransform() {
+      const transformStr = `translate(0, ${targetYOffset})`;
+      document.getElementById('moving-target-group').setAttribute('transform', transformStr);
+    }
+
+    function generateMathQuestion() {
+      clearInterval(mathTimerInterval);
+
+      const level = document.getElementById('math-level').value;
+
+      if (level === 'tanpa-soal') {
+        isMathSolved = true;
+        document.getElementById('math-modal').style.display = 'none';
+        document.getElementById('tutorial').innerText = "Tarik layar ke kiri untuk membidik, perhatikan arah angin!";
+        return;
+      }
+
+      document.getElementById('tutorial').innerText = "Selesaikan soal, lalu tarik layar ke kiri untuk membidik!";
+      
+      let num1, num2;
+      if (level === 'acak') {
+        num1 = Math.floor(Math.random() * 8) + 2; 
+      } else {
+        num1 = parseInt(level); 
+      }
+      num2 = Math.floor(Math.random() * 9) + 2; 
+      
+      currentMathAnswer = num1 * num2;
+      isMathSolved = false;
+
+      let questionString = Math.random() > 0.5 ? `${num1} x ${num2} = ?` : `${num2} x ${num1} = ?`;
+
+      const inputElement = document.getElementById('math-answer');
+      const errorElement = document.getElementById('math-error');
+      
+      inputElement.disabled = false;
+      inputElement.value = '';
+      errorElement.style.display = 'none';
+      document.getElementById('math-submit-btn').style.display = 'inline-block';
+      document.getElementById('math-question').innerText = questionString;
+      document.getElementById('math-modal').style.display = 'block';
+      
+      const timerMode = document.getElementById('timer-mode').value;
+      const timerDisplay = document.getElementById('math-timer-display');
+      
+      if (timerMode !== 'off') {
+        mathTimeLeft = parseInt(timerMode);
+        timerDisplay.innerText = `Waktu: ${mathTimeLeft}s`;
+        timerDisplay.style.display = 'block';
+        timerDisplay.style.color = '#ff4444';
+        
+        mathTimerInterval = setInterval(() => {
+          mathTimeLeft--;
+          timerDisplay.innerText = `Waktu: ${mathTimeLeft}s`;
+          
+          if (mathTimeLeft <= 3) {
+            timerDisplay.style.color = (mathTimeLeft % 2 === 0) ? '#ffcc00' : '#ff0000';
+            if(mathTimeLeft > 0) SoundEngine.play('hit'); 
+          }
+
+          if (mathTimeLeft <= 0) {
+            clearInterval(mathTimerInterval);
+            handleTimeOut();
+          }
+        }, 1000);
+      } else {
+        timerDisplay.style.display = 'none';
+      }
+
+      setTimeout(() => inputElement.focus(), 100);
+    }
+
+    function handleTimeOut() {
+      SoundEngine.init(); 
+      SoundEngine.play('wrong'); 
+      
+      const inputElement = document.getElementById('math-answer');
+      const errorElement = document.getElementById('math-error');
+      
+      inputElement.disabled = true;
+      document.getElementById('math-submit-btn').style.display = 'none';
+      
+      errorElement.innerText = "WAKTU HABIS! Panahmu berkurang 1.";
+      errorElement.style.display = 'block';
+
+      setTimeout(() => {
+        arrowsCount--;
+        document.getElementById('arrows-left').innerText = arrowsCount;
+        
+        if (arrowsCount <= 0) {
+          document.getElementById('math-modal').style.display = 'none';
+          checkGameState();
+        } else {
+          generateMathQuestion();
+        }
+      }, 2000);
+    }
+
+    function checkMathAnswer() {
+      SoundEngine.init(); 
+      if (document.getElementById('math-answer').disabled) return;
+
+      const input = parseInt(document.getElementById('math-answer').value);
+      const errorElement = document.getElementById('math-error');
+
+      if (input === currentMathAnswer) {
+        SoundEngine.play('correct');
+        clearInterval(mathTimerInterval); 
+        document.getElementById('math-modal').style.display = 'none';
+        isMathSolved = true;
+      } else {
+        SoundEngine.play('wrong');
+        errorElement.innerText = "Jawaban salah! Ayo coba hitung lagi.";
+        errorElement.style.display = 'block';
+        document.getElementById('math-answer').value = '';
+        document.getElementById('math-answer').focus();
+      }
+    }
+
+    document.getElementById('math-answer').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') checkMathAnswer();
+    });
+
+    function updateWind() {
+      const windMode = document.getElementById('wind-mode').value;
+      const windArrow = document.getElementById('wind-arrow');
+      
+      if (windMode === 'off') {
+        currentWind = 0;
+        document.getElementById('wind-val').innerText = "0.0";
+        windArrow.innerText = '-';
+        windArrow.style.color = '#ccc';
+        return;
+      }
+
+      currentWind = (Math.random() * 20) - 10;
+      const windSpeed = Math.abs(currentWind).toFixed(1);
+      document.getElementById('wind-val').innerText = windSpeed;
+      
+      if (currentWind > 0.5) {
+        windArrow.innerText = '↓';
+        windArrow.style.color = '#ff4444'; 
+      } else if (currentWind < -0.5) {
+        windArrow.innerText = '↑';
+        windArrow.style.color = '#44cc44'; 
+      } else {
+        windArrow.innerText = '-';
+        windArrow.style.color = '#ccc';
+      }
+    }
+
+    function draw(event) {
+      if (event.target.tagName === 'SELECT' || event.target.tagName === 'OPTION' || event.target.tagName === 'INPUT' || event.target.closest('#ui')) return;
+      if (isGameOver || !isMathSolved) return; 
+      
+      event.preventDefault();
+      
+      SoundEngine.init(); 
+      SoundEngine.play('draw'); 
+      
+      isDrawing = true;
+      randomAngle = Math.random() * Math.PI * 0.03 - 0.015;
+      aimingArrow.setAttribute("opacity", "1");
+      
+      window.addEventListener("mousemove", aim);
+      window.addEventListener("mouseup", loose);
+      window.addEventListener("touchmove", aim, { passive: false });
+      window.addEventListener("touchend", loose);
+      aim(event);
+    }
+
+    function aim(event) {
+      if (event.cancelable) event.preventDefault();
+      const point = getMouseSVG(event);
+      point.x = Math.min(point.x, pivot.x - 7);
+      point.y = Math.max(point.y, pivot.y + 7);
+
+      const dx = point.x - pivot.x;
+      const dy = point.y - pivot.y;
+      const angle = Math.atan2(dy, dx) + randomAngle;
+      const bowAngle = angle - Math.PI;
+      const distance = Math.min(Math.sqrt(dx * dx + dy * dy), 50);
+      const scale = Math.min(Math.max(distance / 30, 1), 2);
+      const bowAngleDeg = radiansToDegrees(bowAngle);
+
+      currentBowAngle = bowAngle;
+      currentDistance = distance;
+
+      bow.setAttribute("transform", `translate(${pivot.x} ${pivot.y}) rotate(${bowAngleDeg}) scale(${scale} 1) translate(${-pivot.x} ${-pivot.y})`);
+      arrowAngle.setAttribute("transform", `rotate(${bowAngleDeg} ${pivot.x} ${pivot.y})`);
+      aimingArrow.setAttribute("x", String(pivot.x - distance));
+      aimingArrow.setAttribute("y", String(pivot.y));
+
+      const stringX = Math.min(pivot.x - (distance / scale), 88);
+      bowString.setAttribute("points", `88,200 ${stringX},250 88,300`);
+
+      const radius = distance * 9;
+      const offset = { x: Math.cos(bowAngle) * radius, y: Math.sin(bowAngle) * radius };
+      const arcWidth = offset.x * 3;
+
+      arc.setAttribute("d", `M100,250c${offset.x},${offset.y},${arcWidth - offset.x},${offset.y + 50},${arcWidth},50`);
+      arc.setAttribute("opacity", String(Math.min(distance / 60, 1)));
+    }
+
+    function loose() {
+      if (!isDrawing) return;
+      isDrawing = false;
+      
+      SoundEngine.play('shoot'); 
+
+      arrowsCount--;
+      document.getElementById('arrows-left').innerText = arrowsCount;
+
+      window.removeEventListener("mousemove", aim);
+      window.removeEventListener("mouseup", loose);
+      window.removeEventListener("touchmove", aim);
+      window.removeEventListener("touchend", loose);
+
+      bow.setAttribute("transform", "");
+      bowString.setAttribute("points", "88,200 88,250 88,300");
+      aimingArrow.setAttribute("opacity", "0");
+      arc.setAttribute("opacity", "0");
+
+      const newArrow = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      newArrow.setAttribute("href", "#arrow");
+      document.getElementById("arrows-ground").appendChild(newArrow);
+
+      animateArrow(newArrow);
+    }
+
+    function animateArrow(arrow) {
+      if (flightAnimation) cancelAnimationFrame(flightAnimation);
+
+      const totalLength = arc.getTotalLength();
+      const start = performance.now();
+      const duration = 500;
+      let hit = false;
+      const windPower = currentWind * 15; 
+      
+      let lastAngleDeg = 0; 
+
+      function frame(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const length = totalLength * progress;
+        const point = arc.getPointAtLength(length);
+        
+        const currentWindEffect = windPower * Math.pow(progress, 2);
+        point.y += currentWindEffect;
+
+        if (length + 2 <= totalLength) {
+          const nextLength = length + 2;
+          const nextProgress = nextLength / totalLength;
+          const nextPoint = arc.getPointAtLength(nextLength);
+          nextPoint.y += windPower * Math.pow(nextProgress, 2);
+          lastAngleDeg = radiansToDegrees(Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x));
+        }
+
+        arrow.setAttribute("transform", `translate(${point.x} ${point.y}) rotate(${lastAngleDeg})`);
+
+        if (hitTest(point, lastAngleDeg)) {
+          hit = true;
+          document.getElementById('arrows-target').appendChild(arrow);
+          arrow.setAttribute("transform", `translate(${point.x} ${point.y - targetYOffset}) rotate(${lastAngleDeg})`);
+          return;
+        }
+
+        const radians = degreesToRadians(lastAngleDeg);
+        const tipX = Math.cos(radians) * 60 + point.x; 
+        
+        const penetrateX = Math.cos(radians) * 40 + point.x;
+        const penetrateY = Math.sin(radians) * 40 + point.y;
+        
+        const groundYAtPenetrate = 350 - (penetrateX / 920) * 40;
+
+        if (penetrateY >= groundYAtPenetrate || tipX >= 1200) {
+          showMessage(".miss");
+          return; 
+        }
+
+        if (progress < 1) {
+          flightAnimation = requestAnimationFrame(frame);
+        } else {
+          if (!hit) showMessage(".miss");
+        }
+      }
+      flightAnimation = requestAnimationFrame(frame);
+    }
+
+    function hitTest(point, angleDeg) {
+      const radians = degreesToRadians(angleDeg);
+      const arrowSegment = {
+        x1: point.x,
+        y1: point.y,
+        x2: Math.cos(radians) * 60 + point.x,
+        y2: Math.sin(radians) * 60 + point.y
+      };
+
+      const shiftedLineSegment = {
+        x1: lineSegment.x1, y1: lineSegment.y1 + targetYOffset,
+        x2: lineSegment.x2, y2: lineSegment.y2 + targetYOffset
+      };
+
+      const intersection = getIntersection(arrowSegment, shiftedLineSegment);
+      if (intersection && intersection.segment1 && intersection.segment2) {
+        if (flightAnimation) cancelAnimationFrame(flightAnimation);
+
+        const shiftedTargetY = target.y + targetYOffset;
+        const dx = intersection.x - target.x;
+        const dy = intersection.y - shiftedTargetY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        showMessage(distance < 9 ? ".bullseye" : ".hit");
+        return true;
+      }
+      return false;
+    }
+
+    function showMessage(selector) {
+      document.querySelectorAll(".miss, .bullseye, .hit").forEach((group) => {
+        group.setAttribute("opacity", "0");
+        group.classList.remove("message-show");
+      });
+
+      const message = document.querySelector(selector);
+      message.setAttribute("opacity", "1");
+      void message.offsetWidth;
+      message.classList.add("message-show");
+
+      if(selector === '.bullseye') {
+        score += 50;
+        SoundEngine.play('bullseye');
+        document.body.classList.add('shake');
+        setTimeout(() => document.body.classList.remove('shake'), 300);
+      } else if (selector === '.hit') {
+        score += 10;
+        SoundEngine.play('hit');
+      } else if (selector === '.miss') {
+        SoundEngine.play('miss');
+      }
+      
+      document.getElementById('score').innerText = score;
+
+      setTimeout(() => {
+        message.setAttribute("opacity", "0");
+        message.classList.remove("message-show");
+        checkGameState();
+      }, 2000);
+    }
+
+    function checkGameState() {
+      if (arrowsCount <= 0) {
+        isGameOver = true;
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('game-over').style.display = 'block';
+      } else {
+        updateWind(); 
+        generateMathQuestion(); 
+      }
+    }
+
+    window.resetGame = function() {
+      score = 0;
+      arrowsCount = 5;
+      isGameOver = false;
+      
+      clearInterval(mathTimerInterval);
+      
+      document.getElementById('score').innerText = score;
+      document.getElementById('arrows-left').innerText = arrowsCount;
+      document.getElementById('game-over').style.display = 'none';
+      
+      document.getElementById('arrows-ground').innerHTML = ''; 
+      document.getElementById('arrows-target').innerHTML = ''; 
+      
+      updateWind();
+      generateMathQuestion(); 
+    }
+
+    function getMouseSVG(event) {
+      const source = event.touches ? event.touches[0] : event.changedTouches ? event.changedTouches[0] : event;
+      cursor.x = source.clientX;
+      cursor.y = source.clientY;
+      return cursor.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function getIntersection(segment1, segment2) {
+      const dx1 = segment1.x2 - segment1.x1;
+      const dy1 = segment1.y2 - segment1.y1;
+      const dx2 = segment2.x2 - segment2.x1;
+      const dy2 = segment2.y2 - segment2.y1;
+      const cx = segment1.x1 - segment2.x1;
+      const cy = segment1.y1 - segment2.y1;
+      const denominator = dy2 * dx1 - dx2 * dy1;
+
+      if (denominator === 0) return null;
+      const ua = (dx2 * cy - dy2 * cx) / denominator;
+      const ub = (dx1 * cy - dy1 * cx) / denominator;
+
+      return {
+        x: segment1.x1 + ua * dx1,
+        y: segment1.y1 + ua * dy1,
+        segment1: ua >= 0 && ua <= 1,
+        segment2: ub >= 0 && ub <= 1
+      };
+    }
+
+    function radiansToDegrees(radians) { return radians * 180 / Math.PI; }
+    function degreesToRadians(degrees) { return degrees * Math.PI / 180; }
+  </script>
+</body>
+</html>
